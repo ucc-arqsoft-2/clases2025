@@ -11,25 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// ItemsRepository define las operaciones de datos para Items
-// Patrón Repository: abstrae el acceso a datos del resto de la aplicación
-type ItemsRepository interface {
-	// List retorna todos los items de la base de datos
-	List(ctx context.Context) ([]domain.Item, error)
-
-	// Create inserta un nuevo item en MongoDB
-	Create(ctx context.Context, item domain.Item) (domain.Item, error)
-
-	// GetByID busca un item por su ID
-	GetByID(ctx context.Context, id string) (domain.Item, error)
-
-	// Update actualiza un item existente
-	Update(ctx context.Context, id string, item domain.Item) (domain.Item, error)
-
-	// Delete elimina un item por ID
-	Delete(ctx context.Context, id string) error
-}
-
 // MongoItemsRepository implementa ItemsRepository usando MongoDB
 type MongoItemsRepository struct {
 	col *mongo.Collection // Referencia a la colección "items" en MongoDB
@@ -37,8 +18,8 @@ type MongoItemsRepository struct {
 
 // NewMongoItemsRepository crea una nueva instancia del repository
 // Recibe una referencia a la base de datos MongoDB
-func NewMongoItemsRepository(db *mongo.Database) ItemsRepository {
-	return &MongoItemsRepository{
+func NewMongoItemsRepository(db *mongo.Database) MongoItemsRepository {
+	return MongoItemsRepository{
 		col: db.Collection("items"), // Conecta con la colección "items"
 	}
 }

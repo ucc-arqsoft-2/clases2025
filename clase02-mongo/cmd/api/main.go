@@ -34,10 +34,10 @@ func main() {
 	itemRepo := repository.NewMongoItemsRepository(mongoDB)
 
 	// Capa de lógica de negocio: validaciones, transformaciones
-	itemService := services.NewItemsService(itemRepo)
+	itemService := services.NewItemsService(&itemRepo)
 
 	// Capa de controladores: maneja HTTP requests/responses
-	itemController := controllers.NewItemsController(itemService)
+	itemController := controllers.NewItemsController(&itemService)
 
 	// 🌐 Configurar router HTTP con Gin
 	router := gin.Default()

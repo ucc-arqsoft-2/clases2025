@@ -2,41 +2,37 @@ package services
 
 import (
 	"clase02-mongo/internal/domain"
-	"clase02-mongo/internal/repository"
 	"context"
 	"errors"
 	"strings"
 )
 
-// ItemsService define la lógica de negocio para Items
-// Capa intermedia entre Controllers (HTTP) y Repository (datos)
-// Responsabilidades: validaciones, transformaciones, reglas de negocio
-type ItemsService interface {
-	// List retorna todos los items (sin filtros por ahora)
+// ItemsRepository define las operaciones de datos para Items
+// Patrón Repository: abstrae el acceso a datos del resto de la aplicación
+type ItemsRepository interface {
+	// List retorna todos los items de la base de datos
 	List(ctx context.Context) ([]domain.Item, error)
-	
-	// Create valida y crea un nuevo item
+
+	// Create inserta un nuevo item en MongoDB
 	Create(ctx context.Context, item domain.Item) (domain.Item, error)
-	
-	// GetByID obtiene un item por su ID
+
+	// GetByID busca un item por su ID
 	GetByID(ctx context.Context, id string) (domain.Item, error)
-	
+
 	// Update actualiza un item existente
 	Update(ctx context.Context, id string, item domain.Item) (domain.Item, error)
-	
+
 	// Delete elimina un item por ID
 	Delete(ctx context.Context, id string) error
-}
-
-// ItemsServiceImpl implementa ItemsService
+} // ItemsServiceImpl implementa ItemsService
 type ItemsServiceImpl struct {
-	repository repository.ItemsRepository // Inyección de dependencia
+	repository ItemsRepository // Inyección de dependencia
 }
 
 // NewItemsService crea una nueva instancia del service
 // Pattern: Dependency Injection - recibe dependencies como parámetros
-func NewItemsService(repository repository.ItemsRepository) ItemsService {
-	return &ItemsServiceImpl{repository: repository}
+func NewItemsService(repository ItemsRepository) ItemsServiceImpl {
+	return ItemsServiceImpl{repository: repository}
 }
 
 // List obtiene todos los items

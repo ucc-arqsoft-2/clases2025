@@ -1,11 +1,32 @@
 package controllers
 
 import (
-	"clase02-mongo/internal/services"
+	"clase02-mongo/internal/domain"
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
+
+// ItemsService define la lógica de negocio para Items
+// Capa intermedia entre Controllers (HTTP) y Repository (datos)
+// Responsabilidades: validaciones, transformaciones, reglas de negocio
+type ItemsService interface {
+	// List retorna todos los items (sin filtros por ahora)
+	List(ctx context.Context) ([]domain.Item, error)
+
+	// Create valida y crea un nuevo item
+	Create(ctx context.Context, item domain.Item) (domain.Item, error)
+
+	// GetByID obtiene un item por su ID
+	GetByID(ctx context.Context, id string) (domain.Item, error)
+
+	// Update actualiza un item existente
+	Update(ctx context.Context, id string, item domain.Item) (domain.Item, error)
+
+	// Delete elimina un item por ID
+	Delete(ctx context.Context, id string) error
+}
 
 // ItemsController maneja las peticiones HTTP para Items
 // Responsabilidades:
@@ -14,11 +35,11 @@ import (
 // - Llamar al service correspondiente
 // - Retornar respuesta HTTP adecuada
 type ItemsController struct {
-	service services.ItemsService // Inyección de dependencia
+	service ItemsService // Inyección de dependencia
 }
 
 // NewItemsController crea una nueva instancia del controller
-func NewItemsController(itemsService services.ItemsService) *ItemsController {
+func NewItemsController(itemsService ItemsService) *ItemsController {
 	return &ItemsController{
 		service: itemsService,
 	}
