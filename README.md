@@ -20,8 +20,15 @@ git --version
 ## 🚀 Inicio rápido
 
 ⚠️ Primero asegúrate de estar en el directorio de la clase. 
-Ej.: cd clase02-mongo
-Ej.: cd clase03-memcache
+Ej.: 
+```bash
+cd clase02-mongo
+```
+
+Ej.: 
+```bash
+cd clase03-memcache
+```
 
 **1. Levantar servicios (MongoDB, Memcached, etc.)**
 ```bash
@@ -39,7 +46,9 @@ docker-compose logs
 # Linux/Mac
 cp .env.example .env
 export $(grep -v '^#' .env | xargs)
+```
 
+```ps
 # Windows (PowerShell)
 Copy-Item .env.example .env
 Get-Content .env | ForEach-Object { if ($_ -match '^([^#].*)=(.*)') { Set-Item -Path "env:$($matches[1])" -Value $matches[2] } }
@@ -55,12 +64,16 @@ go run ./cmd/api
 ### Desarrollo diario
 ```bash
 ./scripts/start.sh clase02-mongo
+```
+```bash
 ./scripts/dev.sh clase02-mongo
 ```
 
 **Ayuda:**
 ```bash
 ./scripts/start.sh --help    # Ver opciones disponibles
+```
+```bash
 ./scripts/dev.sh --help      # Ver opciones de desarrollo
 ```
 
