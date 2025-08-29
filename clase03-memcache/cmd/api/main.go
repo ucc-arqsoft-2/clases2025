@@ -39,8 +39,8 @@ func main() {
 	// 2) TODO(Clase): Crear cliente de Memcached con TTL (usar internal/cache/memcached.go)
 	// cacheClient := cache.New(memcachedAddr, ttlDur)
 
-	// 3) Router (por ahora, sin cache real: pasar nil)
-	r := server.NewRouter(store, nil)
+	// 3) Router (por ahora, sin cache - solo store)
+	r := server.NewRouter(store)
 
 	log.Printf("listening on %s | mongo=%s/%s", addr, mongoDB, mongoColl)
 	if err := r.Run(addr); err != nil {
