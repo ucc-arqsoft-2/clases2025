@@ -17,13 +17,37 @@ echo.
 REM Verificar o navegar al directorio correcto
 set "CLASS_DIR=%1"
 
-if not "%CLASS_DIR%"=="" (
+REM Si no se pasó parámetro, verificar si estamos en directorio raíz del proyecto
+if "%CLASS_DIR%"=="" (
+    REM Si estamos en directorio que contiene scripts\ y directorios clase*\
+    if exist "scripts\" (
+        dir /ad /b clase* >nul 2>&1
+        if !errorlevel! equ 0 (
+            echo [ERROR] ❌ Parámetro de clase es OBLIGATORIO cuando ejecutas desde el directorio raíz
+            echo [ERROR] 
+            echo [ERROR] Uso correcto:
+            echo [ERROR]   %0 ^<nombre-clase^>
+            echo [ERROR] 
+            echo [ERROR] Ejemplos:
+            echo [ERROR]   %0 clase02-mongo
+            echo [ERROR]   %0 clase03-memcache
+            echo [ERROR] 
+            echo [INFO] Directorios de clases disponibles:
+            for /f %%i in ('dir /ad /b clase* 2^>nul') do echo   %%i
+            echo [ERROR] 
+            echo [ERROR] Alternativa: navega manualmente al directorio
+            echo [ERROR]   cd clase02-mongo ^&^& scripts\start.bat
+            pause
+            exit /b 1
+        )
+    )
+) else (
     echo [INFO] Navegando al directorio de clase: %CLASS_DIR%
     
     if not exist "%CLASS_DIR%" (
         echo [ERROR] El directorio '%CLASS_DIR%' no existe.
         echo [INFO] Directorios disponibles:
-        dir /ad /b clase* 2>nul || echo No se encontraron directorios de clase
+        for /f %%i in ('dir /ad /b clase* 2^>nul') do echo   %%i
         pause
         exit /b 1
     )
@@ -41,18 +65,9 @@ REM Verificar que estamos en el directorio correcto
 echo [INFO] Verificando directorio de trabajo...
 
 if not exist "docker-compose.yml" if not exist "go.mod" (
-    if "%CLASS_DIR%"=="" (
-        echo [ERROR] No se encontró docker-compose.yml o go.mod en el directorio actual.
-        echo [ERROR] Opciones:
-        echo [ERROR] 1. cd clase02-mongo ^&^& scripts\start.bat
-        echo [ERROR] 2. scripts\start.bat clase02-mongo ^(desde el directorio raíz^)
-        echo [INFO] Directorio actual: %CD%
-        echo [INFO] Directorios disponibles:
-        dir /ad /b clase* 2>nul || echo No se encontraron directorios de clase
-    ) else (
-        echo [ERROR] El directorio '%CLASS_DIR%' no contiene un proyecto válido.
-        echo [ERROR] Verifica que contenga docker-compose.yml o go.mod
-    )
+    echo [ERROR] El directorio actual no contiene un proyecto válido.
+    echo [ERROR] Debe contener docker-compose.yml o go.mod
+    echo [INFO] Directorio actual: %CD%
     pause
     exit /b 1
 )

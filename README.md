@@ -19,26 +19,49 @@ git --version
 
 ## 🚀 Inicio rápido
 
-Tienes **dos opciones** para ejecutar el proyecto:
+Tienes **tres opciones** para ejecutar el proyecto:
 
-### Opción 1: Automática con parámetro (Más fácil) 🌟
+### Opción 1: Modo Desarrollo con Hot Reload 🔥 (Recomendado para programar)
 
-**Desde el directorio raíz del repo**, pasar el nombre de la clase:
+**¿Estás desarrollando?** Los cambios en código se aplican automáticamente.
 
 **Linux/Mac:**
 ```bash
 cd clases2025                    # Directorio raíz del repo
-chmod +x scripts/start.sh       # Solo la primera vez
-./scripts/start.sh clase02-mongo
+chmod +x scripts/dev.sh         # Solo la primera vez
+./scripts/dev.sh clase02-mongo  # ⚠️ Parámetro es OBLIGATORIO
 ```
 
 **Windows:**
 ```cmd
 cd clases2025                    REM Directorio raíz del repo
-scripts\start.bat clase02-mongo
+scripts\dev.bat clase02-mongo   REM ⚠️ Parámetro es OBLIGATORIO
 ```
 
-### Opción 2: Comandos manuales (Para aprender)
+**Ventajas del modo desarrollo:**
+- 🔥 **Hot reload automático** - Cambios en código se aplican al instante
+- ⚡ **Más rápido** - No reinicia servicios innecesariamente  
+- 💾 **Preserva datos** - Los datos en MongoDB se mantienen
+- 🐛 **Ideal para debugging** - Logs detallados con colores
+
+### Opción 2: Modo Ejecución Simple 🌟 (Para probar)
+
+**¿Solo quieres ejecutar una vez?** Usa esta opción.
+
+**Linux/Mac:**
+```bash
+cd clases2025                    # Directorio raíz del repo
+chmod +x scripts/start.sh       # Solo la primera vez
+./scripts/start.sh clase02-mongo  # ⚠️ Parámetro es OBLIGATORIO
+```
+
+**Windows:**
+```cmd
+cd clases2025                    REM Directorio raíz del repo
+scripts\start.bat clase02-mongo   REM ⚠️ Parámetro es OBLIGATORIO
+```
+
+### Opción 3: Comandos manuales (Para aprender el proceso)
 
 **1. Levantar servicios (MongoDB, Memcached, etc.)**
 ```bash
@@ -83,8 +106,14 @@ cd clase02-mongo && ./scripts/dev.sh
 ```
 
 **Scripts disponibles:**
-- `scripts/start.sh` / `scripts/start.bat` - Inicia todo el proyecto automáticamente
-- `scripts/dev.sh` / `scripts/dev.bat` - Modo desarrollo con hot reload
+
+🔥 **Para desarrollo (Recomendado):**
+- `scripts/dev.sh` / `scripts/dev.bat` - **Hot reload automático**
+
+⚡ **Para ejecución simple:**
+- `scripts/start.sh` / `scripts/start.bat` - Ejecuta proyecto completo una vez
+
+🛠️ **Para gestión:**
 - `scripts/stop.sh` / `scripts/stop.bat` - Detiene todos los servicios
 - `scripts/clean.sh` / `scripts/clean.bat` - Limpia contenedores y datos
 
@@ -93,6 +122,34 @@ cd clase02-mongo && ./scripts/dev.sh
 ./scripts/start.sh --help    # Ver opciones disponibles
 ./scripts/dev.sh --help      # Ver opciones de desarrollo
 ```
+
+**💡 Recomendación:** Usa `dev.sh` cuando estés programando y `start.sh` solo para probar rápidamente.
+
+## 🔥 Hot Reload - Desarrollo en tiempo real
+
+El script `dev.sh` incluye **hot reload automático** con Air:
+
+```bash
+# Inicia modo desarrollo
+./scripts/dev.sh clase03-memcache
+
+# Al editar cualquier archivo .go:
+# 1. Air detecta el cambio automáticamente
+# 2. Recompila el código
+# 3. Reinicia la aplicación
+# 4. ¡Los cambios se ven al instante!
+
+# No necesitas:
+# - Detener la aplicación manualmente
+# - Ejecutar "go run" otra vez  
+# - Reiniciar Docker
+```
+
+**Archivos observados por Air:**
+- ✅ Todos los `.go` en `cmd/`, `internal/`
+- ✅ Templates (`.html`, `.tmpl`)
+- ❌ Archivos de test (`_test.go`) - ignorados
+- ❌ Directorio `tmp/` - ignorados
 
 ## 🌐 Endpoints comunes
 
@@ -158,6 +215,29 @@ go mod download
 go mod tidy
 ```
 
+### Errores con Air (hot reload)
+```bash
+# Error: "module declares its path as: github.com/air-verse/air but was required as: github.com/cosmtrek/air"
+# Solución: Air cambió su repositorio
+
+# Instalar manualmente con el nuevo path:
+go install github.com/air-verse/air@latest
+
+# Error: "air: command not found" después de la instalación
+# Solución: Agregar GOPATH/bin al PATH
+
+# Linux/Mac:
+export PATH=$PATH:$(go env GOPATH)/bin
+
+# Windows (PowerShell):
+$env:PATH += ";$(go env GOPATH)\bin"
+
+# Windows (CMD):
+set PATH=%PATH%;%GOPATH%\bin
+
+# Los scripts ya manejan esto automáticamente
+```
+
 ### Errores de Docker Build
 ```bash
 # Error: "git": executable file not found in $PATH
@@ -188,9 +268,10 @@ sudo usermod -aG docker $USER
 ```
 proyecto-clase/
 ├── README.md                 # Este archivo
+├── .gitignore               # Archivos a ignorar en Git ⚠️
 ├── docker-compose.yml       # Definición de servicios
 ├── .env.example             # Variables de entorno template
-├── .env                     # Variables de entorno (no commitear)
+├── .env                     # Variables de entorno (no commitear) ⚠️
 ├── go.mod                   # Dependencias Go
 ├── scripts/                 # Scripts de automatización
 │   ├── start.sh            # Linux/Mac - Iniciar proyecto
@@ -204,8 +285,11 @@ proyecto-clase/
 │   ├── services/          # Lógica de negocio
 │   ├── repository/        # Acceso a datos
 │   └── models/            # Estructuras de datos
+├── tmp/                    # Archivos temporales (ignorado) ⚠️
 └── init/                  # Scripts de inicialización DB
 ```
+
+**⚠️ Archivos marcados no se suben a Git** (están en `.gitignore`)
 
 ## 🎯 Flujo de trabajo recomendado
 
@@ -242,12 +326,13 @@ proyecto-clase/
 
 ## 💡 Tips para estudiantes
 
-- **⚠️ SIEMPRE hacer `cd` al directorio de la clase primero** - Es el error más común
-- **Usa los scripts automatizados** - Evitan errores comunes
-- **Lee los logs** - `docker-compose logs` te dice qué está pasando
-- **Variables de entorno** - Siempre copia `.env.example` a `.env`
-- **Hot reload** - Usa `./scripts/dev.sh` para development
-- **Limpieza** - Ejecuta `docker-compose down -v` para limpiar datos de prueba
+- **🔥 Para DESARROLLO: Usa `./scripts/dev.sh`** - Hot reload automático, cambios instantáneos
+- **⚡ Para PRUEBAS: Usa `./scripts/start.sh`** - Ejecución simple una sola vez
+- **⚠️ Parámetro de clase es OBLIGATORIO** - `./scripts/dev.sh clase02-mongo`
+- **Variables de entorno** - El script copia `.env.example` a `.env` automáticamente
+- **Preserva datos** - El modo `dev.sh` mantiene datos en MongoDB entre reinicios
+- **Lee los logs** - `docker-compose logs -f` muestra logs en tiempo real
+- **Limpieza** - Usa `./scripts/clean.sh` cuando quieras empezar desde cero
 
 ## 🆘 ¿Algo no funciona?
 

@@ -14,14 +14,39 @@ echo 🔧 UCC - Modo Desarrollo
 echo ==================================
 echo.
 
-REM Navegar al directorio si se especificó
+REM Verificar parámetro obligatorio si estamos en directorio raíz
 set "CLASS_DIR=%1"
 
-if not "%CLASS_DIR%"=="" (
+if "%CLASS_DIR%"=="" (
+    REM Si estamos en directorio que contiene scripts\ y directorios clase*\
+    if exist "scripts\" (
+        dir /ad /b clase* >nul 2>&1
+        if !errorlevel! equ 0 (
+            echo [ERROR] ❌ Parámetro de clase es OBLIGATORIO cuando ejecutas desde el directorio raíz
+            echo [ERROR] 
+            echo [ERROR] Uso correcto:
+            echo [ERROR]   %0 ^<nombre-clase^>
+            echo [ERROR] 
+            echo [ERROR] Ejemplos:
+            echo [ERROR]   %0 clase02-mongo
+            echo [ERROR]   %0 clase03-memcache
+            echo [ERROR] 
+            echo [INFO] Directorios de clases disponibles:
+            for /f %%i in ('dir /ad /b clase* 2^>nul') do echo   %%i
+            echo [ERROR] 
+            echo [ERROR] Alternativa: navega manualmente al directorio
+            echo [ERROR]   cd clase02-mongo ^&^& scripts\dev.bat
+            pause
+            exit /b 1
+        )
+    )
+) else (
     echo [DEV] Navegando al directorio de clase: %CLASS_DIR%
     
     if not exist "%CLASS_DIR%" (
         echo [ERROR] El directorio '%CLASS_DIR%' no existe.
+        echo [INFO] Directorios disponibles:
+        for /f %%i in ('dir /ad /b clase* 2^>nul') do echo   %%i
         pause
         exit /b 1
     )
@@ -157,9 +182,19 @@ if %errorlevel% equ 0 (
     
     if /i "!response!"=="y" (
         echo [DEV] Instalando Air...
-        go install github.com/cosmtrek/air@latest
+        go install github.com/air-verse/air@latest
         if %errorlevel% equ 0 (
             echo [SUCCESS] Air instalado correctamente
+            
+            REM Agregar GOPATH\bin al PATH si no está
+            for /f "tokens=*" %%i in ('go env GOPATH') do set GOPATH=%%i
+            set "GOBIN=%GOPATH%\bin"
+            echo %PATH% | findstr /C:"%GOBIN%" >nul
+            if %errorlevel% neq 0 (
+                echo [INFO] Agregando %GOBIN% al PATH...
+                set "PATH=%PATH%;%GOBIN%"
+            )
+            
             call "%~f0"
             exit /b 0
         ) else (

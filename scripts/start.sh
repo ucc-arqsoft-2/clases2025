@@ -33,14 +33,34 @@ log_error() {
 check_and_navigate_directory() {
     local class_dir="$1"
     
-    if [ -n "$class_dir" ]; then
+    # Si no se pasó parámetro, verificar si estamos en directorio raíz del proyecto
+    if [ -z "$class_dir" ]; then
+        # Si estamos en directorio que contiene scripts/ y directorios clase*/
+        if [ -d "scripts" ] && ls -d clase*/ >/dev/null 2>&1; then
+            log_error "❌ Parámetro de clase es OBLIGATORIO cuando ejecutas desde el directorio raíz"
+            log_error ""
+            log_error "Uso correcto:"
+            log_error "  $0 <nombre-clase>"
+            log_error ""
+            log_error "Ejemplos:"
+            log_error "  $0 clase02-mongo"
+            log_error "  $0 clase03-memcache"
+            log_error ""
+            log_info "Directorios de clases disponibles:"
+            ls -d clase*/ 2>/dev/null | sed 's|/||g' | sed 's/^/  /'
+            log_error ""
+            log_error "Alternativa: navega manualmente al directorio"
+            log_error "  cd clase02-mongo && ./scripts/start.sh"
+            exit 1
+        fi
+    else
         # Si se pasó un parámetro, intentar navegar a ese directorio
         log_info "Navegando al directorio de clase: $class_dir"
         
         if [ ! -d "$class_dir" ]; then
             log_error "El directorio '$class_dir' no existe."
             log_info "Directorios disponibles:"
-            ls -d clase*/ 2>/dev/null || echo "No se encontraron directorios de clase"
+            ls -d clase*/ 2>/dev/null | sed 's|/||g' | sed 's/^/  /' || echo "  No se encontraron directorios de clase"
             exit 1
         fi
         
@@ -56,18 +76,9 @@ check_and_navigate_directory() {
     log_info "Verificando directorio de trabajo..."
     
     if [ ! -f "docker-compose.yml" ] && [ ! -f "go.mod" ]; then
-        if [ -z "$class_dir" ]; then
-            log_error "No se encontró docker-compose.yml o go.mod en el directorio actual."
-            log_error "Opciones:"
-            log_error "1. cd clase02-mongo && ./scripts/start.sh"
-            log_error "2. ./scripts/start.sh clase02-mongo (desde el directorio raíz)"
-            log_info "Directorio actual: $(pwd)"
-            log_info "Directorios disponibles:"
-            ls -d */clase*/ 2>/dev/null || ls -d clase*/ 2>/dev/null || echo "No se encontraron directorios de clase"
-        else
-            log_error "El directorio '$class_dir' no contiene un proyecto válido."
-            log_error "Verifica que contenga docker-compose.yml o go.mod"
-        fi
+        log_error "El directorio actual no contiene un proyecto válido."
+        log_error "Debe contener docker-compose.yml o go.mod"
+        log_info "Directorio actual: $(pwd)"
         exit 1
     fi
     

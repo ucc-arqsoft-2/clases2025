@@ -28,11 +28,26 @@ log_error() {
 install_air() {
     if ! command -v air &> /dev/null; then
         log_info "Instalando Air para hot reload..."
-        if ! go install github.com/cosmtrek/air@latest; then
+        if ! go install github.com/air-verse/air@latest; then
             log_error "Error instalando Air"
             exit 1
         fi
         log_success "Air instalado correctamente"
+        
+        # Configurar PATH para incluir Go bin si no está
+        local go_bin_path="$(go env GOPATH)/bin"
+        if [[ ":$PATH:" != *":$go_bin_path:"* ]]; then
+            log_info "Agregando $go_bin_path al PATH..."
+            export PATH="$PATH:$go_bin_path"
+        fi
+        
+        # Verificar que air ahora sea accesible
+        if ! command -v air &> /dev/null; then
+            log_error "Air se instaló pero no está accesible en PATH"
+            log_info "Intenta ejecutar: export PATH=\$PATH:\$(go env GOPATH)/bin"
+            log_info "O reinicia tu terminal"
+            exit 1
+        fi
     fi
 }
 
@@ -115,11 +130,33 @@ main() {
     echo "=================================="
     echo
     
-    # Navegar al directorio si se especificó
-    if [ -n "$1" ]; then
+    # Verificar parámetro obligatorio si estamos en directorio raíz
+    if [ -z "$1" ]; then
+        # Si estamos en directorio que contiene scripts/ y directorios clase*/
+        if [ -d "scripts" ] && ls -d clase*/ >/dev/null 2>&1; then
+            log_error "❌ Parámetro de clase es OBLIGATORIO cuando ejecutas desde el directorio raíz"
+            log_error ""
+            log_error "Uso correcto:"
+            log_error "  $0 <nombre-clase>"
+            log_error ""
+            log_error "Ejemplos:"
+            log_error "  $0 clase02-mongo"
+            log_error "  $0 clase03-memcache"
+            log_error ""
+            log_info "Directorios de clases disponibles:"
+            ls -d clase*/ 2>/dev/null | sed 's|/||g' | sed 's/^/  /'
+            log_error ""
+            log_error "Alternativa: navega manualmente al directorio"
+            log_error "  cd clase02-mongo && ./scripts/dev.sh"
+            exit 1
+        fi
+    else
+        # Navegar al directorio si se especificó
         log_info "Navegando al directorio de clase: $1"
         if [ ! -d "$1" ]; then
             log_error "El directorio '$1' no existe."
+            log_info "Directorios disponibles:"
+            ls -d clase*/ 2>/dev/null | sed 's|/||g' | sed 's/^/  /'
             exit 1
         fi
         cd "$1" || {
@@ -158,13 +195,22 @@ main() {
         log_info "Usando Air para hot reload..."
         create_air_config
         air
+    elif [ -f "$(go env GOPATH)/bin/air" ]; then
+        log_info "Usando Air para hot reload (ruta completa)..."
+        create_air_config
+        "$(go env GOPATH)/bin/air"
     else
         log_info "Air no está instalado. ¿Quieres instalarlo para hot reload? (y/N)"
         read -r response
         if [[ "$response" =~ ^[Yy]$ ]]; then
             install_air
             create_air_config
-            air
+            # Usar Air recién instalado
+            if command -v air &> /dev/null; then
+                air
+            else
+                "$(go env GOPATH)/bin/air"
+            fi
         else
             # Fallback a go run normal
             log_info "Ejecutando sin hot reload..."
