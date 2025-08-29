@@ -19,49 +19,9 @@ git --version
 
 ## 🚀 Inicio rápido
 
-Tienes **tres opciones** para ejecutar el proyecto:
-
-### Opción 1: Modo Desarrollo con Hot Reload 🔥 (Recomendado para programar)
-
-**¿Estás desarrollando?** Los cambios en código se aplican automáticamente.
-
-**Linux/Mac:**
-```bash
-cd clases2025                    # Directorio raíz del repo
-chmod +x scripts/dev.sh         # Solo la primera vez
-./scripts/dev.sh clase02-mongo  # ⚠️ Parámetro es OBLIGATORIO
-```
-
-**Windows:**
-```cmd
-cd clases2025                    REM Directorio raíz del repo
-scripts\dev.bat clase02-mongo   REM ⚠️ Parámetro es OBLIGATORIO
-```
-
-**Ventajas del modo desarrollo:**
-- 🔥 **Hot reload automático** - Cambios en código se aplican al instante
-- ⚡ **Más rápido** - No reinicia servicios innecesariamente  
-- 💾 **Preserva datos** - Los datos en MongoDB se mantienen
-- 🐛 **Ideal para debugging** - Logs detallados con colores
-
-### Opción 2: Modo Ejecución Simple 🌟 (Para probar)
-
-**¿Solo quieres ejecutar una vez?** Usa esta opción.
-
-**Linux/Mac:**
-```bash
-cd clases2025                    # Directorio raíz del repo
-chmod +x scripts/start.sh       # Solo la primera vez
-./scripts/start.sh clase02-mongo  # ⚠️ Parámetro es OBLIGATORIO
-```
-
-**Windows:**
-```cmd
-cd clases2025                    REM Directorio raíz del repo
-scripts\start.bat clase02-mongo   REM ⚠️ Parámetro es OBLIGATORIO
-```
-
-### Opción 3: Comandos manuales (Para aprender el proceso)
+⚠️ Primero asegúrate de estar en el directorio de la clase. 
+Ej.: cd clase02-mongo
+Ej.: cd clase03-memcache
 
 **1. Levantar servicios (MongoDB, Memcached, etc.)**
 ```bash
@@ -93,29 +53,10 @@ go run ./cmd/api
 ## 🔧 Scripts disponibles
 
 ### Desarrollo diario
-
-**Todos los scripts soportan ambos modos:**
 ```bash
-# Opción 1: Con parámetro (desde directorio raíz)
 ./scripts/start.sh clase02-mongo
 ./scripts/dev.sh clase02-mongo
-
-# Opción 2: Sin parámetro (desde directorio de clase)
-cd clase02-mongo && ./scripts/start.sh
-cd clase02-mongo && ./scripts/dev.sh
 ```
-
-**Scripts disponibles:**
-
-🔥 **Para desarrollo (Recomendado):**
-- `scripts/dev.sh` / `scripts/dev.bat` - **Hot reload automático**
-
-⚡ **Para ejecución simple:**
-- `scripts/start.sh` / `scripts/start.bat` - Ejecuta proyecto completo una vez
-
-🛠️ **Para gestión:**
-- `scripts/stop.sh` / `scripts/stop.bat` - Detiene todos los servicios
-- `scripts/clean.sh` / `scripts/clean.bat` - Limpia contenedores y datos
 
 **Ayuda:**
 ```bash
@@ -124,27 +65,6 @@ cd clase02-mongo && ./scripts/dev.sh
 ```
 
 **💡 Recomendación:** Usa `dev.sh` cuando estés programando y `start.sh` solo para probar rápidamente.
-
-## 🔥 Hot Reload - Desarrollo en tiempo real
-
-El script `dev.sh` incluye **hot reload automático** con Air:
-
-```bash
-# Inicia modo desarrollo
-./scripts/dev.sh clase03-memcache
-
-# Al editar cualquier archivo .go:
-# 1. Air detecta el cambio automáticamente
-# 2. Recompila el código
-# 3. Reinicia la aplicación
-# 4. ¡Los cambios se ven al instante!
-
-# No necesitas:
-# - Detener la aplicación manualmente
-# - Ejecutar "go run" otra vez  
-# - Reiniciar Docker
-```
-
 **Archivos observados por Air:**
 - ✅ Todos los `.go` en `cmd/`, `internal/`
 - ✅ Templates (`.html`, `.tmpl`)
@@ -288,41 +208,6 @@ proyecto-clase/
 ├── tmp/                    # Archivos temporales (ignorado) ⚠️
 └── init/                  # Scripts de inicialización DB
 ```
-
-**⚠️ Archivos marcados no se suben a Git** (están en `.gitignore`)
-
-## 🎯 Flujo de trabajo recomendado
-
-1. **Clonar el repositorio**
-   ```bash
-   git clone [URL_DEL_REPO]
-   cd [NOMBRE_PROYECTO]
-   ```
-
-2. **Ejecutar proyecto (elige tu opción preferida)**
-   
-   **Opción A - Automática (Recomendada):**
-   ```bash
-   ./scripts/start.sh clase02-mongo    # Linux/Mac
-   scripts\start.bat clase02-mongo     # Windows
-   ```
-   
-   **Opción B - Manual:**
-   ```bash
-   cd clase02-mongo                    # Navegar a la clase
-   ./scripts/start.sh                  # Linux/Mac
-   scripts\start.bat                   # Windows
-   ```
-
-3. **Desarrollar y probar**
-   - Código en `internal/`
-   - Probar endpoints con curl o Postman
-   - Ver logs: `docker-compose logs -f`
-
-4. **Detener servicios al terminar**
-   ```bash
-   docker-compose down
-   ```
 
 ## 💡 Tips para estudiantes
 
