@@ -5,18 +5,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	// "example.com/gin-memcached-base/internal/cache" // TODO(Clase)
 	"example.com/gin-memcached-base/internal/handlers"
 	"example.com/gin-memcached-base/internal/repository"
+	"example.com/gin-memcached-base/internal/service"
 )
 
-func NewRouter(store repository.ItemStore /*, c *cache.Client*/) *gin.Engine {
+func NewRouter(store repository.ItemStore, c service.Cache) *gin.Engine {
 	r := gin.Default()
-	h := handlers.NewItemHandler(store /*, c*/)
+	itemService := service.NewItemService(store, c)
+	h := handlers.NewItemHandler(itemService)
 
-	// TODO(Clase): Cuando implementen cache, usar c.SelfTest aquí.
 	r.GET("/healthz", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"ok": true, "cache": "not-wired-yet"})
+		ctx.JSON(http.StatusOK, gin.H{"ok": true, "cache": "wired"})
 	})
 
 	v1 := r.Group("/v1")

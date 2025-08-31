@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"example.com/gin-memcached-base/internal/cache"
 	"example.com/gin-memcached-base/internal/repository"
 	"example.com/gin-memcached-base/internal/server"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -36,11 +37,19 @@ func main() {
 	col := client.Database(mongoDB).Collection(mongoColl)
 	store := repository.NewMongoStore(col)
 
-	// 2) TODO(Clase): Crear cliente de Memcached con TTL (usar internal/cache/memcached.go)
-	// cacheClient := cache.New(memcachedAddr, ttlDur)
+	// 2) Crear cliente de cache
+	// Opción A: Cache en memoria (rápido, no persistente)
+	cacheClient := cache.NewClient()
+	
+	// Opción B: Cache usando Memcached (persistente en red, más realista)
+	// Descomenta la línea siguiente y comenta la anterior para usar Memcached
+	// Asegúrate de tener memcached corriendo en localhost:11211
+	// cacheClient := cache.NewMemcachedClient("localhost:11211")
+	
+	// Ambos implementan la interfaz service.Cache, por eso es intercambiable
 
-	// 3) Router (por ahora, sin cache - solo store)
-	r := server.NewRouter(store)
+	// 3) Router con store y cache
+	r := server.NewRouter(store, cacheClient)
 
 	log.Printf("listening on %s | mongo=%s/%s", addr, mongoDB, mongoColl)
 	if err := r.Run(addr); err != nil {

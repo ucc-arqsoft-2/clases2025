@@ -133,7 +133,9 @@ setup_env() {
     
     # Cargar variables de entorno si existe .env
     if [ -f ".env" ]; then
-        export $(grep -v '^#' .env | xargs)
+        set -a  # automatically export all variables
+        source .env
+        set +a  # disable auto export
         log_success "Variables de entorno cargadas"
     fi
 }

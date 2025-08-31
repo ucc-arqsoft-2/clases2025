@@ -45,7 +45,7 @@ docker-compose logs
 ```bash
 # Linux/Mac
 cp .env.example .env
-export $(grep -v '^#' .env | xargs)
+set -a && source .env && set +a
 ```
 
 ```ps
