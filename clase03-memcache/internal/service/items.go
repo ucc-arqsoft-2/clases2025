@@ -2,16 +2,19 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"example.com/gin-memcached-base/internal/models"
 	"example.com/gin-memcached-base/internal/repository"
 )
 
 // Cache define la interfaz que debe implementar cualquier sistema de cache
-// Principio: "accept interfaces, return types" - el service define lo que necesita
 type Cache interface {
 	Get(key string) (models.Item, error)
 	Set(key string, item models.Item) error
+
+	GetList(key string) ([]models.Item, error)
+	SetList(key string, items []models.Item) error
 }
 
 type ItemService interface {
@@ -38,28 +41,54 @@ func (s *itemService) Create(ctx context.Context, name string, price float64) (m
 		return models.Item{}, err
 	}
 
-	// TODO(Clase): Setear el item en cache usando s.cache.Set()
+	// Guardar en cache individual
+	key := fmt.Sprintf("item:%s", item.ID)
+	_ = s.cache.Set(key, item)
 
 	return item, nil
 }
 
 func (s *itemService) GetByID(ctx context.Context, id string) (models.Item, error) {
-	// TODO(Clase): Intentar obtener el item del cache primero usando s.cache.Get()
-	// Si existe en cache, retornarlo directamente
+	key := fmt.Sprintf("item:%s", id)
 
-	// Si no está en cache, obtenerlo de la base de datos
+	// Intentar primero obtener de cache
+	if cached, err := s.cache.Get(key); err == nil {
+		return cached, nil
+	}
+
+	// Si no está en cache, obtenerlo de la base
 	item, err := s.store.GetByID(ctx, id)
 	if err != nil {
 		return models.Item{}, err
 	}
 
-	// TODO(Clase): Guardar el item en cache para futuras consultas usando s.cache.Set()
-	
+	// Guardar en cache
+	_ = s.cache.Set(key, item)
+
 	return item, nil
 }
 
 func (s *itemService) List(ctx context.Context) ([]models.Item, error) {
-	// TODO(Clase - Opcional): Implementar cache para la lista completa
-	// Pueden usar una key como "items:all" para cachear la lista
-	return s.store.List(ctx)
+	key := "items:all"
+
+	// Intentar obtener lista del cache
+	if cachedList, err := s.cache.GetList(key); err == nil {
+		return cachedList, nil
+	}
+
+	// Si no está en cache, ir a la base
+	items, err := s.store.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Guardar lista completa en cache
+	_ = s.cache.SetList(key, items)
+
+	// Opcional: cachear cada item individual también
+	for _, item := range items {
+		_ = s.cache.Set(fmt.Sprintf("item:%s", item.ID), item)
+	}
+
+	return items, nil
 }

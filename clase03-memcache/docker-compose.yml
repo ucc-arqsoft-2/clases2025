@@ -16,6 +16,8 @@ services:
     image: memcached:1.6-alpine
     command: ["-m", "64"]
     restart: unless-stopped
+    ports:
+      - "11211:11211"
   mongo:
     image: mongo:7.0
     restart: unless-stopped
