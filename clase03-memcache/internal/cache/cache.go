@@ -1,60 +1,30 @@
 package cache
 
 import (
-	"encoding/json"
+	"errors"
 
-	"github.com/bradfitz/gomemcache/memcache"
 	"example.com/gin-memcached-base/internal/models"
 )
 
 type Client struct {
-	mc *memcache.Client
+	storage map[string]models.Item
 }
 
-func NewClient(addr string) *Client {
+func NewClient() *Client {
 	return &Client{
-		mc: memcache.New(addr), // ejemplo "127.0.0.1:11211"
+		storage: make(map[string]models.Item),
 	}
 }
 
-// Guardar un item individual
 func (c *Client) Set(key string, item models.Item) error {
-	data, err := json.Marshal(item)
-	if err != nil {
-		return err
-	}
-	return c.mc.Set(&memcache.Item{Key: key, Value: data})
+	c.storage[key] = item
+	return nil
 }
 
 func (c *Client) Get(key string) (models.Item, error) {
-	it, err := c.mc.Get(key)
-	if err != nil {
-		return models.Item{}, err
-	}
-	var item models.Item
-	if err := json.Unmarshal(it.Value, &item); err != nil {
-		return models.Item{}, err
+	item, exists := c.storage[key]
+	if !exists {
+		return models.Item{}, errors.New("item no encontrado")
 	}
 	return item, nil
-}
-
-// Guardar lista de items
-func (c *Client) SetList(key string, items []models.Item) error {
-	data, err := json.Marshal(items)
-	if err != nil {
-		return err
-	}
-	return c.mc.Set(&memcache.Item{Key: key, Value: data})
-}
-
-func (c *Client) GetList(key string) ([]models.Item, error) {
-	it, err := c.mc.Get(key)
-	if err != nil {
-		return nil, err
-	}
-	var items []models.Item
-	if err := json.Unmarshal(it.Value, &items); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
