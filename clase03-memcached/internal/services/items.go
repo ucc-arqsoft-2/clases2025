@@ -1,7 +1,7 @@
 package services
 
 import (
-	"clase02-mongo/internal/domain"
+	"clase03-memcached/internal/domain"
 	"context"
 	"errors"
 	"fmt"
@@ -29,13 +29,15 @@ type ItemsRepository interface {
 
 type ItemsServiceImpl struct {
 	repository ItemsRepository // Inyección de dependencia
+	cache      ItemsRepository // Inyección de dependencia
 }
 
 // NewItemsService crea una nueva instancia del service
 // Pattern: Dependency Injection - recibe dependencies como parámetros
-func NewItemsService(repository ItemsRepository) ItemsServiceImpl {
+func NewItemsService(repository ItemsRepository, cache ItemsRepository) ItemsServiceImpl {
 	return ItemsServiceImpl{
 		repository: repository,
+		cache:      cache,
 	}
 }
 
@@ -55,17 +57,31 @@ func (s *ItemsServiceImpl) Create(ctx context.Context, item domain.Item) (domain
 		return domain.Item{}, fmt.Errorf("error creating item in repository: %w", err)
 	}
 
+	_, err = s.cache.Create(ctx, created)
+	if err != nil {
+		return domain.Item{}, fmt.Errorf("error creating item in cache: %w", err)
+	}
+
 	return created, nil
 }
 
 // GetByID obtiene un item por su ID
 // Consigna 2: Validar formato de ID antes de consultar DB
 func (s *ItemsServiceImpl) GetByID(ctx context.Context, id string) (domain.Item, error) {
-	item, err := s.repository.GetByID(ctx, id)
+	item, err := s.cache.GetByID(ctx, id)
 	if err != nil {
-		return domain.Item{}, fmt.Errorf("error getting item from repository: %w", err)
-	}
+		item, err := s.repository.GetByID(ctx, id)
+		if err != nil {
+			return domain.Item{}, fmt.Errorf("error getting item from repository: %w", err)
+		}
 
+		_, err = s.cache.Create(ctx, item)
+		if err != nil {
+			return domain.Item{}, fmt.Errorf("error creating item in cache: %w", err)
+		}
+
+		return item, nil
+	}
 	return item, nil
 }
 

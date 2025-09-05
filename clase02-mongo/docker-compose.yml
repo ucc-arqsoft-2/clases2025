@@ -1,21 +1,29 @@
+version: "3.9"
 services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+      - memcached
   mongo:
-    image: mongo:7
-    container_name: mongo
+    image: mongo:7.0
     restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-secret}
     ports:
       - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DB:-demo}
     volumes:
+      - ./mongo-init:/docker-entrypoint-initdb.d:ro
       - mongo_data:/data/db
-      - ./init:/docker-entrypoint-initdb.d:ro
-    healthcheck:
-      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok' | grep 1 || exit 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 60
-      start_period: 60s
+  memcached:
+    image: memcached:1.6-alpine
+    restart: unless-stopped
+    command: ["-m", "64"]
+    ports:
+      - "11211:11211"
 volumes:
   mongo_data:

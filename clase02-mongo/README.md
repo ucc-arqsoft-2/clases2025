@@ -1,48 +1,45 @@
-# 🧪 Proyecto Base – API Go (Gin) + MongoDB + Docker
+# Clase 03 — Memcached + Gin + Mongo (BASE para la clase)
 
-Este proyecto base está pensado para usar en clase/lab. Incluye lo mínimo para arrancar:
-- Docker Compose con MongoDB + init básico
-- API Go con Gin (solo `GET /items` implementado)
-- Archivos y estructura clave ya listos
-- Actividades/consignas para completar el CRUD y features avanzados
+Estructura igual a la solución (respetando el screenshot). Este repo está
+preparado para que completes los ejercicios de cacheo con Memcached.
 
 ## Requisitos
-- Docker + Docker Compose
-- Go 1.22+
+- Docker Desktop (Windows / macOS)
+- `git`
 
-## Levantar Mongo
+## Levantar
+1. Copiá `.env.example` a `.env`
+2. `docker compose up --build`
+3. Probar:
+   - macOS/Linux:
+     ```bash
+     curl -s http://localhost:8080/healthz | jq .
+     curl -s http://localhost:8080/items | jq .
+     ```
+   - Windows PowerShell:
+     ```powershell
+     Invoke-RestMethod http://localhost:8080/healthz
+     Invoke-RestMethod http://localhost:8080/items
+     ```
+
+## Ejercicios
+1. **Listado cacheado**: en `internal/service/items.go` almacenar el resultado de `List()`
+   en Memcached con clave `items:all` y TTL 60s. Leer desde cache si existe.
+2. **Detalle cacheado**: en `Get()` cachear bajo `item:<id>`.
+3. **Invalidación**: al `Create`, `Update`, `Delete` invalidar `items:all` y `item:<id>`.
+4. **Índice de claves**: en `internal/cache/memcached.go` mantener un índice de claves
+   (por ejemplo, clave `cache:index` con un JSON de strings) para poder listarlas desde
+   `/__cache/keys`. Remover del índice en `Delete`.
+5. **Endpoints de inspección**: hacer que `/__cache/keys` y `/__cache/get?key=` funcionen
+   usando tu implementación.
+
+## Ver la cache desde tu PC
+Cuando completes el punto 4, podrás:
 ```bash
-cp .env.example .env
-docker compose up -d
-docker compose logs -f mongo
+curl -s http://localhost:8080/__cache/keys | jq .
+curl -s "http://localhost:8080/__cache/get?key=items:all" | jq .
 ```
 
-## Correr la API (local, fuera de Docker)
-```bash
-export MONGODB_URI="mongodb://appuser:apppass@localhost:27017/app?authSource=app&retryWrites=true&w=majority"
-export MONGODB_DB=app
-export PORT=8080
-go run ./cmd/api
-```
-
-## Endpoints (base)
-- GET `/healthz`
-- GET `/items` ✅ Implementado
-- POST `/items` ❌ TODO
-- GET `/items/:id` ❌ TODO
-- PUT `/items/:id` ❌ TODO
-- DELETE `/items/:id` ❌ TODO
-
-## Consignas
-1. **Create**: implementar `POST /items` (validar `name` y `price >= 0`, timestamps).
-2. **Get por ID**: implementar `GET /items/:id` (validar ObjectID).
-3. **Update**: implementar `PUT /items/:id` (parcial + timestamps).
-4. **Delete**: implementar `DELETE /items/:id`.
-
-## Comandos útiles en mongosh
-```javascript
-use app
-show collections
-db.items.find().limit(5)
-db.items.insertOne({ name: "Demo", price: 9.5, createdAt: new Date(), updatedAt: new Date() })
-```
+## Notas
+- Memcached está expuesto en el puerto 11211 del host para que puedas probar herramientas externas.
+- Mongo se inicializa con `mongo-init/seed.js`.

@@ -1,18 +1,26 @@
 package config
 
-import "os"
+import (
+	"os"
+)
 
 type Config struct {
-	Port     string
-	MongoURI string
-	MongoDB  string
+	Port  string
+	Mongo MongoConfig
+}
+
+type MongoConfig struct {
+	URI string
+	DB  string
 }
 
 func Load() Config {
 	return Config{
-		Port:     getEnv("PORT", "8080"),
-		MongoURI: getEnv("MONGODB_URI", "mongodb://appuser:apppass@localhost:27017/app?authSource=app"),
-		MongoDB:  getEnv("MONGODB_DB", "app"),
+		Port: getEnv("PORT", "8080"),
+		Mongo: MongoConfig{
+			URI: getEnv("MONGO_URI", "mongodb://appuser:apppass@localhost:27017/app?authSource=app"),
+			DB:  getEnv("MONGO_DB", "app"),
+		},
 	}
 }
 

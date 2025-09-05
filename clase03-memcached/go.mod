@@ -1,4 +1,4 @@
-module clase02-mongo
+module clase03-memcached
 
 go 1.22
 

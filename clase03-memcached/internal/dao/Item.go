@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"clase02-mongo/internal/domain"
+	"clase03-memcached/internal/domain"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
