@@ -11,10 +11,6 @@
 *.dll
 *.so
 *.dylib
-main
-api
-app
-server
 
 # Archivos de prueba de Go
 *.test
