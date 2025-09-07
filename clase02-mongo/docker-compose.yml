@@ -1,14 +1,4 @@
-version: "3.9"
 services:
-  api:
-    build: .
-    ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    depends_on:
-      - mongo
-      - memcached
   mongo:
     image: mongo:7.0
     restart: unless-stopped
@@ -19,11 +9,5 @@ services:
     volumes:
       - ./mongo-init:/docker-entrypoint-initdb.d:ro
       - mongo_data:/data/db
-  memcached:
-    image: memcached:1.6-alpine
-    restart: unless-stopped
-    command: ["-m", "64"]
-    ports:
-      - "11211:11211"
 volumes:
   mongo_data:
