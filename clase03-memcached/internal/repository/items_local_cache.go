@@ -15,7 +15,7 @@ type ItemsLocalCacheRepository struct {
 
 func NewItemsLocalCacheRepository(ttl time.Duration) *ItemsLocalCacheRepository {
 	return &ItemsLocalCacheRepository{
-		client: ccache.New(ccache.Configure[string]()),
+		client: ccache.New(ccache.Configure()),
 		ttl:    ttl,
 	}
 }
