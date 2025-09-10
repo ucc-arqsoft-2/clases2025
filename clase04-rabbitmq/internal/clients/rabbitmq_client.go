@@ -21,25 +21,23 @@ type RabbitMQClient struct {
 	queue      *amqp091.Queue
 }
 
-func NewRabbitMQClient(user string, password string, queueName string, host string, port string) *RabbitMQClient {
-	connection, err := amqp091.Dial(fmt.Sprintf("amqp://%s:%s@%s:%d/", user, password, host, port))
+func NewRabbitMQClient(user, password, queueName, host, port string) *RabbitMQClient {
+	connStr := fmt.Sprintf("amqp://%s:%s@%s:%s/", user, password, host, port) // 👈 %s
+	connection, err := amqp091.Dial(connStr)
 	if err != nil {
-		log.Fatalf("failed to connect to RabbitMQ: %w", err)
+		log.Fatalf("failed to connect to RabbitMQ: %v", err) // 👈 %v, no %w
 	}
 	channel, err := connection.Channel()
 	if err != nil {
-		log.Fatalf("failed to open a channel: %w", err)
+		log.Fatalf("failed to open a channel: %v", err)
 	}
 	queue, err := channel.QueueDeclare(queueName, false, false, false, false, nil)
 	if err != nil {
-		log.Fatalf("failed to declare a queue: %w", err)
+		log.Fatalf("failed to declare a queue: %v", err)
 	}
-	return &RabbitMQClient{
-		connection: connection,
-		channel:    channel,
-		queue:      &queue,
-	}
+	return &RabbitMQClient{connection: connection, channel: channel, queue: &queue}
 }
+
 
 func (r RabbitMQClient) Publish(ctx context.Context, action string, itemID string) error {
 	message := map[string]interface{}{

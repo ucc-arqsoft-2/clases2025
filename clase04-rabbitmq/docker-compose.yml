@@ -7,8 +7,12 @@ services:
     env_file:
       - .env
     depends_on:
-      - mongo
-      - memcached
+      rabbit:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+      memcached:
+        condition: service_started
   mongo:
     image: mongo:7.0
     restart: unless-stopped
@@ -25,5 +29,20 @@ services:
     command: ["-m", "64"]
     ports:
       - "11211:11211"
+  rabbit:
+    image: rabbitmq:3-management
+    container_name: rabbit
+    restart: unless-stopped
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # Panel web
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-admin}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 volumes:
   mongo_data:
