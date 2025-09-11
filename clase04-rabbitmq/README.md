@@ -43,3 +43,16 @@ curl -s "http://localhost:8080/__cache/get?key=items:all" | jq .
 ## Notas
 - Memcached está expuesto en el puerto 11211 del host para que puedas probar herramientas externas.
 - Mongo se inicializa con `mongo-init/seed.js`.
+
+## Testear CREATE
+```bash
+curl -X POST http://localhost:8080/items \
+  -H "Content-Type: application/json" \
+  -d '{"id":"item-123","name":"Coca Cola","price":100}'
+```
+
+##
+docker compose down --remove-orphans
+docker compose build --no-cache api
+docker compose up -d
+docker compose logs -f api

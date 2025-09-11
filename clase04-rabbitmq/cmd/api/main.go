@@ -14,6 +14,13 @@ import (
 	"time"
 )
 
+type NoopPublisher struct{}
+func (NoopPublisher) Publish(ctx context.Context, action, itemID string) error {
+	log.Printf("⚠️ NOOP publish: action=%s item_id=%s (Rabbit no disponible)", action, itemID)
+	return nil
+}
+
+
 func main() {
 	// 📋 Cargar configuración desde las variables de entorno
 	cfg := config.Load()
@@ -38,8 +45,7 @@ func main() {
 	// Capa de cache local: maneja operaciones con CCache
 	// itemsLocalCacheRepo := repository.NewItemsLocalCacheRepository(30 * time.Second)
 
-	// Inicializamos RabbitMQ para comunicar las novedades de escritura de items
-	itemsQueue := clients.NewRabbitMQClient(
+	itemsQueue, err := clients.NewRabbitMQClient(
 		cfg.RabbitMQ.Username,
 		cfg.RabbitMQ.Password,
 		cfg.RabbitMQ.QueueName,
@@ -47,9 +53,17 @@ func main() {
 		cfg.RabbitMQ.Port,
 	)
 
-	// Capa de lógica de negocio: validaciones, transformaciones
-	itemService := services.NewItemsService(itemsMongoRepo, itemsMemcachedRepo, itemsQueue)
+	var publisher services.ItemsPublisher
+	if err != nil {
+		log.Printf("⚠️ Rabbit init falló: %v. Sigo con NoopPublisher.", err)
+		publisher = NoopPublisher{}
+	} else {
+		defer itemsQueue.Close()
+		publisher = itemsQueue
+	}
 
+	// Capa de lógica de negocio: validaciones, transformaciones
+	itemService := services.NewItemsService(itemsMongoRepo, itemsMemcachedRepo, publisher)
 	// Capa de controladores: maneja HTTP requests/responses
 	itemController := controllers.NewItemsController(&itemService)
 
