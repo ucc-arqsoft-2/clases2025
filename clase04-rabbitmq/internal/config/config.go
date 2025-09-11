@@ -48,8 +48,8 @@ func Load() Config {
 			TTLSeconds: memcachedTTL,
 		},
 		RabbitMQ: RabbitMQConfig{
-			Username:  getEnv("RABBITMQ_USERNAME", "guest"),
-			Password:  getEnv("RABBITMQ_PASSWORD", "guest"),
+			Username:  getEnv("RABBITMQ_USER", "admin"),
+			Password:  getEnv("RABBITMQ_PASS", "admin"),
 			QueueName: getEnv("RABBITMQ_QUEUE_NAME", "items-news"),
 			Host:      getEnv("RABBITMQ_HOST", "localhost"),
 			Port:      getEnv("RABBITMQ_PORT", "5672"),
