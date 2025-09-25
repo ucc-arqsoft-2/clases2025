@@ -69,25 +69,136 @@ func (c *ItemsController) GetItems(ctx *gin.Context) {
 // CreateItem maneja POST /items - Crea un nuevo item
 // Consigna 1: Recibir JSON, validar y crear item
 func (c *ItemsController) CreateItem(ctx *gin.Context) {
-	ctx.JSON(http.StatusNotImplemented, gin.H{"error": "TODO: implementar CreateItem"})
+	// Obtener el Item del body JSON
+	var newItem domain.Item
+	if err := ctx.ShouldBindJSON(&newItem); err != nil {
+		// ❌ Error en los datos enviados por el cliente
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid request body",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	item, err := c.service.Create(ctx, newItem)
+	if err != nil {
+		// ❌ Error interno del servidor
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to create item",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// ✅ Respuesta exitosa con el item creado
+	ctx.JSON(http.StatusCreated, gin.H{
+		"item": item,
+	})
 }
 
 // GetItemByID maneja GET /items/:id - Obtiene item por ID
 // Consigna 2: Extraer ID del path param, validar y buscar
 func (c *ItemsController) GetItemByID(ctx *gin.Context) {
-	ctx.JSON(http.StatusNotImplemented, gin.H{"error": "TODO: implementar GetItemByID"})
+	// Obtener el ID del path param
+	id := ctx.Param("id")
+	if id == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "ID parameter is required",
+		})
+		return
+	}
+
+	item, err := c.service.GetByID(ctx, id)
+	if err != nil {
+		if err.Error() == "item not found" {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"error": "Item not found",
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to fetch item",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"item": item,
+	})
 }
 
 // UpdateItem maneja PUT /items/:id - Actualiza item existente
 // Consigna 3: Extraer ID y datos, validar y actualizar
 func (c *ItemsController) UpdateItem(ctx *gin.Context) {
-	ctx.JSON(http.StatusNotImplemented, gin.H{"error": "TODO: implementar UpdateItem"})
+	var toUpdate domain.Item
+	err := ctx.ShouldBindJSON(&toUpdate)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid request body",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	id := ctx.Param("id")
+	if id == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "ID parameter is required",
+		})
+		return
+	}
+
+	updatedItem, err := c.service.Update(ctx, id, toUpdate)
+	if err != nil {
+		if err.Error() == "item not found" {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"error": "Item not found",
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to update item",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"item": updatedItem,
+	})
 }
 
 // DeleteItem maneja DELETE /items/:id - Elimina item por ID
 // Consigna 4: Extraer ID, validar y eliminar
 func (c *ItemsController) DeleteItem(ctx *gin.Context) {
-	ctx.JSON(http.StatusNotImplemented, gin.H{"error": "TODO: implementar DeleteItem"})
+	id := ctx.Param("id")
+	if id == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "ID parameter is required",
+		})
+		return
+	}
+
+	err := c.service.Delete(ctx, id)
+	if err != nil {
+		if err.Error() == "item not found" {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"error": "Item not found",
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to delete item",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, nil) // 204 No Content
 }
 
 // 📚 Notas sobre HTTP Status Codes
