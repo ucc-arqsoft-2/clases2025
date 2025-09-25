@@ -39,16 +39,18 @@ type ItemsConsumer interface {
 type ItemsServiceImpl struct {
 	repository ItemsRepository // Inyección de dependencia
 	cache      ItemsRepository // Inyección de dependencia
+	search     ItemsRepository // Repositorio de búsqueda (Solr)
 	publisher  ItemsPublisher
 	consumer   ItemsConsumer
 }
 
 // NewItemsService crea una nueva instancia del service
 // Pattern: Dependency Injection - recibe dependencies como parámetros
-func NewItemsService(repository ItemsRepository, cache ItemsRepository, publisher ItemsPublisher, consumer ItemsConsumer) ItemsServiceImpl {
+func NewItemsService(repository ItemsRepository, cache ItemsRepository, search ItemsRepository, publisher ItemsPublisher, consumer ItemsConsumer) ItemsServiceImpl {
 	return ItemsServiceImpl{
 		repository: repository,
 		cache:      cache,
+		search:     search,
 		publisher:  publisher,
 		consumer:   consumer,
 	}
@@ -164,7 +166,24 @@ func (s *ItemsServiceImpl) handleMessage(ctx context.Context, message ItemEvent)
 	switch message.Action {
 	case "create":
 		slog.Info("✅ Item created", slog.String("item_id", message.ItemID))
-		// Aquí podrías agregar lógica adicional como notificaciones, logs, etc.
+
+		// Indexar el item en Solr para búsquedas
+		item, err := s.repository.GetByID(ctx, message.ItemID)
+		if err != nil {
+			slog.Error("❌ Error getting item for indexing",
+				slog.String("item_id", message.ItemID),
+				slog.String("error", err.Error()))
+			return fmt.Errorf("error getting item for indexing: %w", err)
+		}
+
+		if _, err := s.search.Create(ctx, item); err != nil {
+			slog.Error("❌ Error indexing item in search",
+				slog.String("item_id", message.ItemID),
+				slog.String("error", err.Error()))
+			return fmt.Errorf("error indexing item in search: %w", err)
+		}
+
+		slog.Info("🔍 Item indexed in search engine", slog.String("item_id", message.ItemID))
 
 	case "update":
 		slog.Info("✏️ Item updated", slog.String("item_id", message.ItemID))

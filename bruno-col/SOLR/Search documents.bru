@@ -1,0 +1,21 @@
+meta {
+  name: Search documents
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8983/solr/demo/select?q=*:*&wt=json&indent=true
+  body: none
+  auth: inherit
+}
+
+params:query {
+  q: *:*
+  wt: json
+  indent: true
+}
+
+settings {
+  encodeUrl: false
+}

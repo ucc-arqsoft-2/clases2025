@@ -103,7 +103,24 @@ func (r *MongoItemsRepository) Create(ctx context.Context, item domain.Item) (do
 // GetByID busca un item por su ID
 // Consigna 2: Validar que el ID sea un ObjectID válido
 func (r *MongoItemsRepository) GetByID(ctx context.Context, id string) (domain.Item, error) {
-	return domain.Item{}, errors.New("TODO: implementar GetByID")
+	// Validar que el ID tenga formato ObjectID válido
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return domain.Item{}, errors.New("invalid ObjectID format")
+	}
+
+	// Buscar el documento por _id
+	var daoItem dao.Item
+	filter := bson.M{"_id": objectID}
+	err = r.col.FindOne(ctx, filter).Decode(&daoItem)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return domain.Item{}, errors.New("item not found")
+		}
+		return domain.Item{}, err
+	}
+
+	return daoItem.ToDomain(), nil
 }
 
 // Update actualiza un item existente

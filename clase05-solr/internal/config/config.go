@@ -13,6 +13,7 @@ type Config struct {
 	Mongo     MongoConfig
 	Memcached MemcachedConfig
 	RabbitMQ  RabbitMQConfig
+	Solr      SolrConfig
 }
 
 type MongoConfig struct {
@@ -32,6 +33,12 @@ type RabbitMQConfig struct {
 	QueueName string
 	Host      string
 	Port      string
+}
+
+type SolrConfig struct {
+	Host string
+	Port string
+	Core string
 }
 
 func Load() Config {
@@ -61,6 +68,11 @@ func Load() Config {
 			QueueName: getEnv("RABBITMQ_QUEUE_NAME", "items-news"),
 			Host:      getEnv("RABBITMQ_HOST", "localhost"),
 			Port:      getEnv("RABBITMQ_PORT", "5672"),
+		},
+		Solr: SolrConfig{
+			Host: getEnv("SOLR_HOST", "localhost"),
+			Port: getEnv("SOLR_PORT", "8983"),
+			Core: getEnv("SOLR_CORE", "demo"),
 		},
 	}
 }

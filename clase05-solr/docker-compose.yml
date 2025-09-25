@@ -30,5 +30,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  solr:
+    image: solr:9
+    container_name: solr
+    restart: unless-stopped
+    ports:
+      - "8983:8983"
+    volumes:
+      - solr_data:/var/solr
+    command:
+      - solr-precreate
+      - demo
 volumes:
   mongo_data:
+  solr_data:
