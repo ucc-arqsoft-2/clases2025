@@ -1,0 +1,34 @@
+services:
+  mongo:
+    image: mongo:latest
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DB:-demo}
+    volumes:
+      - ./mongo-init:/docker-entrypoint-initdb.d:ro
+      - mongo_data:/data/db
+  memcached:
+    image: memcached:1.6-alpine
+    restart: unless-stopped
+    command: ["-m", "64"]
+    ports:
+      - "11211:11211"
+  rabbit:
+    image: rabbitmq:3-management
+    container_name: rabbit
+    restart: unless-stopped
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # Panel web
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-admin}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  mongo_data:
