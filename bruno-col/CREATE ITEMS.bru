@@ -1,0 +1,22 @@
+meta {
+  name: CREATE ITEMS
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/items
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Notebook nueva 3",
+    "price": 12.5
+  }
+}
+
+settings {
+  encodeUrl: true
+}
