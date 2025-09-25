@@ -1,8 +1,11 @@
 package config
 
 import (
+	"log"
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -23,6 +26,11 @@ type MemcachedConfig struct {
 }
 
 func Load() Config {
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found or error loading .env file")
+	}
+
 	memcachedTTL, err := strconv.Atoi(getEnv("MEMCACHED_TTL_SECONDS", "60"))
 	if err != nil {
 		memcachedTTL = 60
@@ -30,8 +38,8 @@ func Load() Config {
 	return Config{
 		Port: getEnv("PORT", "8080"),
 		Mongo: MongoConfig{
-			URI: getEnv("MONGO_URI", "mongodb://appuser:apppass@localhost:27017/app?authSource=app"),
-			DB:  getEnv("MONGO_DB", "app"),
+			URI: getEnv("MONGO_URI", "mongodb://localhost:27017"),
+			DB:  getEnv("MONGO_DB", "demo"),
 		},
 		Memcached: MemcachedConfig{
 			Host:       getEnv("MEMCACHED_HOST", "localhost"),

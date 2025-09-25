@@ -1,20 +1,6 @@
-version: "3.9"
 services:
-  api:
-    build: .
-    ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    depends_on:
-      rabbit:
-        condition: service_healthy
-      mongo:
-        condition: service_started
-      memcached:
-        condition: service_started
   mongo:
-    image: mongo:7.0
+    image: mongo:latest
     restart: unless-stopped
     ports:
       - "27017:27017"

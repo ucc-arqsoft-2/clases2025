@@ -8,10 +8,11 @@ import (
 	"clase04-rabbitmq/internal/repository"
 	"clase04-rabbitmq/internal/services"
 	"context"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {

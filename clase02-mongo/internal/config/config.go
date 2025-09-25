@@ -1,7 +1,10 @@
 package config
 
 import (
+	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -15,11 +18,16 @@ type MongoConfig struct {
 }
 
 func Load() Config {
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found or error loading .env file")
+	}
+
 	return Config{
 		Port: getEnv("PORT", "8080"),
 		Mongo: MongoConfig{
-			URI: getEnv("MONGO_URI", "mongodb://appuser:apppass@localhost:27017/app?authSource=app"),
-			DB:  getEnv("MONGO_DB", "app"),
+			URI: getEnv("MONGO_URI", "mongodb://localhost:27017"),
+			DB:  getEnv("MONGO_DB", "demo"),
 		},
 	}
 }

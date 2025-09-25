@@ -5,9 +5,10 @@ import (
 	"clase04-rabbitmq/internal/domain"
 	"context"
 	"errors"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"time"
+
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
