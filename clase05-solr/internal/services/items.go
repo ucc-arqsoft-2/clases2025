@@ -172,6 +172,7 @@ func (s *ItemsServiceImpl) handleMessage(ctx context.Context, message ItemEvent)
 		slog.Info("✅ Item created", slog.String("item_id", message.ItemID))
 
 		// Indexar el item en Solr para búsquedas
+		// Esto se debe reemplazar por llamdada HTTP cuando los servicios se desacoplan
 		item, err := s.repository.GetByID(ctx, message.ItemID)
 		if err != nil {
 			slog.Error("❌ Error getting item for indexing",
