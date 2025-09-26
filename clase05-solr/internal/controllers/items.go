@@ -53,10 +53,10 @@ func NewItemsController(itemsService ItemsService) *ItemsController {
 // List maneja GET /items - Lista los items en base a los filtros provistos en la query
 func (c *ItemsController) List(ctx *gin.Context) {
 	// Parsear filtros desde query params
-	// Ejemplo GET /items?name=iphone&minPrice=100&maxPrice=500&page=2&count=20&sortBy=price%20desc
+	// Ejemplo GET /items?q=iphone&minPrice=100&maxPrice=500&page=2&count=20&sortBy=price%20desc
 	filters := domain.SearchFilters{}
 
-	filters.Name = ctx.Query("name")
+	filters.Name = ctx.Query("q")
 
 	if minPriceStr := ctx.Query("minPrice"); minPriceStr != "" {
 		if minPrice, err := strconv.ParseFloat(minPriceStr, 64); err == nil {
