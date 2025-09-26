@@ -77,7 +77,7 @@ func main() {
 	})
 
 	// 📚 Rutas de Items API
-	// GET /items - listar todos los items (✅ implementado)
+	// GET /items - listar los items con filtros(✅ implementado)
 	router.GET("/items", itemController.List)
 
 	// TODO: Implementar la lógica de estos endpoints (actualmente retornan 501)

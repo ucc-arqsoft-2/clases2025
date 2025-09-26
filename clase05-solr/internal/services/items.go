@@ -60,8 +60,8 @@ func NewItemsService(repository ItemsRepository, cache ItemsRepository, search I
 // ✅ IMPLEMENTADO - Delegación simple al repository
 func (s *ItemsServiceImpl) List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error) {
 	// En este caso, no hay lógica de negocio especial
-	// Solo delegamos al repository
-	return s.repository.List(ctx, filters)
+	// Solo delegamos al search repository
+	return s.search.List(ctx, filters)
 }
 
 // Create valida y crea un nuevo item
