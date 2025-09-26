@@ -24,8 +24,8 @@ func NewMemcachedItemsRepository(host string, port string, ttl time.Duration) Me
 	}
 }
 
-func (r MemcachedItemsRepository) List(ctx context.Context) (domain.SearchResponse, error) {
-	return domain.SearchResponse{}, fmt.Errorf("list is not supported in memcached")
+func (r MemcachedItemsRepository) List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error) {
+	return domain.PaginatedResponse{}, fmt.Errorf("list is not supported in memcached")
 }
 
 func (r MemcachedItemsRepository) Create(ctx context.Context, item domain.Item) (domain.Item, error) {

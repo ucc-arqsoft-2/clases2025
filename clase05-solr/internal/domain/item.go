@@ -4,9 +4,20 @@ import (
 	"time"
 )
 
-type SearchResponse struct {
+type SearchFilters struct {
+	ID       string   `json:"id"`
+	Name     string   `json:"name"`
+	MinPrice *float64 `json:"min_price"`
+	MaxPrice *float64 `json:"max_price"`
+	SortBy   string   `json:"sort_by"`
+	Page     int      `json:"page"`
+	Count    int      `json:"count"`
+}
+
+type PaginatedResponse struct {
 	Page    int    `json:"page"`
 	Count   int    `json:"count"`
+	Total   int    `json:"total"`
 	Results []Item `json:"results"`
 }
 

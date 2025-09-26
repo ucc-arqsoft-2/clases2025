@@ -12,8 +12,8 @@ import (
 // ItemsRepository define las operaciones de datos para Items
 // Patrón Repository: abstrae el acceso a datos del resto de la aplicación
 type ItemsRepository interface {
-	// List retorna todos los items de la base de datos
-	List(ctx context.Context) ([]domain.Item, error)
+	// List retorna items de la base de datos en base a los filtros
+	List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error)
 
 	// Create inserta un nuevo item en DB
 	Create(ctx context.Context, item domain.Item) (domain.Item, error)
@@ -58,10 +58,10 @@ func NewItemsService(repository ItemsRepository, cache ItemsRepository, search I
 
 // List obtiene todos los items
 // ✅ IMPLEMENTADO - Delegación simple al repository
-func (s *ItemsServiceImpl) List(ctx context.Context) ([]domain.Item, error) {
+func (s *ItemsServiceImpl) List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error) {
 	// En este caso, no hay lógica de negocio especial
 	// Solo delegamos al repository
-	return s.repository.List(ctx)
+	return s.repository.List(ctx, filters)
 }
 
 // Create valida y crea un nuevo item

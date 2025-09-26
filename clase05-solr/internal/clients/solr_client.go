@@ -40,6 +40,10 @@ type SolrUpdateResponse struct {
 	} `json:"responseHeader"`
 }
 
+const (
+	defaultCount = 10
+)
+
 func NewSolrClient(host, port, core string) *SolrClient {
 	baseURL := fmt.Sprintf("http://%s:%s/solr/%s", host, port, core)
 	return &SolrClient{
@@ -93,30 +97,42 @@ func (s *SolrClient) Index(ctx context.Context, item domain.Item) error {
 	return nil
 }
 
-func (s *SolrClient) Search(ctx context.Context, query string) ([]domain.Item, error) {
+func (s *SolrClient) Search(ctx context.Context, query string, page int, count int) (domain.PaginatedResponse, error) {
+	if page < 1 {
+		page = 1
+	}
+	if count <= 0 {
+		count = defaultCount
+	}
+
+	// calcular offset
+	start := (page - 1) * count
+
 	params := url.Values{}
 	params.Set("q", query)
 	params.Set("wt", "json")
+	params.Set("start", fmt.Sprintf("%d", start))
+	params.Set("rows", fmt.Sprintf("%d", count))
 
 	url := fmt.Sprintf("%s/select?%s", s.baseURL, params.Encode())
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error creating request: %w", err)
+		return domain.PaginatedResponse{}, fmt.Errorf("error creating request: %w", err)
 	}
 
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("error executing request: %w", err)
+		return domain.PaginatedResponse{}, fmt.Errorf("error executing request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("solr returned status %d", resp.StatusCode)
+		return domain.PaginatedResponse{}, fmt.Errorf("solr returned status %d", resp.StatusCode)
 	}
 
 	var solrResp SolrResponse
 	if err := json.NewDecoder(resp.Body).Decode(&solrResp); err != nil {
-		return nil, fmt.Errorf("error decoding response: %w", err)
+		return domain.PaginatedResponse{}, fmt.Errorf("error decoding response: %w", err)
 	}
 
 	items := make([]domain.Item, len(solrResp.Response.Docs))
@@ -130,7 +146,12 @@ func (s *SolrClient) Search(ctx context.Context, query string) ([]domain.Item, e
 		}
 	}
 
-	return items, nil
+	return domain.PaginatedResponse{
+		Page:    page,
+		Count:   len(items),
+		Total:   solrResp.Response.NumFound, // total de coincidencias
+		Results: items,
+	}, nil
 }
 
 func (s *SolrClient) Delete(ctx context.Context, id string) error {
@@ -164,8 +185,4 @@ func (s *SolrClient) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
-}
-
-func (s *SolrClient) GetAll(ctx context.Context) ([]domain.Item, error) {
-	return s.Search(ctx, "*:*")
 }

@@ -3,17 +3,17 @@ package controllers
 import (
 	"clase05-solr/internal/domain"
 	"context"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"strconv"
 )
 
 // ItemsService define la lógica de negocio para Items
 // Capa intermedia entre Controllers (HTTP) y Repository (datos)
 // Responsabilidades: validaciones, transformaciones, reglas de negocio
 type ItemsService interface {
-	// List retorna todos los items (sin filtros por ahora)
-	List(ctx context.Context) ([]domain.Item, error)
+	// List retorna items (si no se provee una query, retorna todos los items) de forma paginada
+	List(ctx context.Context, filters domain.SearchFilters) (domain.PaginatedResponse, error)
 
 	// Create valida y crea un nuevo item
 	Create(ctx context.Context, item domain.Item) (domain.Item, error)
@@ -38,6 +38,11 @@ type ItemsController struct {
 	service ItemsService // Inyección de dependencia
 }
 
+const (
+	listDefaultPage  = 1
+	listDefaultCount = 10
+)
+
 // NewItemsController crea una nueva instancia del controller
 func NewItemsController(itemsService ItemsService) *ItemsController {
 	return &ItemsController{
@@ -45,13 +50,46 @@ func NewItemsController(itemsService ItemsService) *ItemsController {
 	}
 }
 
-// GetItems maneja GET /items - Lista todos los items
-// ✅ IMPLEMENTADO - Ejemplo para que los estudiantes entiendan el patrón
-func (c *ItemsController) GetItems(ctx *gin.Context) {
-	// 🔍 Llamar al service para obtener los datos
-	items, err := c.service.List(ctx.Request.Context())
+// List maneja GET /items - Lista los items en base a los filtros provistos en la query
+func (c *ItemsController) List(ctx *gin.Context) {
+	// Parsear filtros desde query params
+	filters := domain.SearchFilters{}
+
+	filters.Name = ctx.Query("name")
+
+	if minPriceStr := ctx.Query("minPrice"); minPriceStr != "" {
+		if minPrice, err := strconv.ParseFloat(minPriceStr, 64); err == nil {
+			filters.MinPrice = &minPrice
+		}
+	}
+
+	if maxPriceStr := ctx.Query("maxPrice"); maxPriceStr != "" {
+		if maxPrice, err := strconv.ParseFloat(maxPriceStr, 64); err == nil {
+			filters.MaxPrice = &maxPrice
+		}
+	}
+
+	if pageStr := ctx.Query("page"); pageStr != "" {
+		if page, err := strconv.Atoi(pageStr); err == nil {
+			filters.Page = page
+		}
+	} else {
+		filters.Page = listDefaultPage // default
+	}
+
+	if countStr := ctx.Query("count"); countStr != "" {
+		if count, err := strconv.Atoi(countStr); err == nil {
+			filters.Count = count
+		}
+	} else {
+		filters.Count = listDefaultCount // default
+	}
+
+	filters.SortBy = ctx.DefaultQuery("sortBy", "createdAt desc")
+
+	// 🔍 Llamar al service
+	resp, err := c.service.List(ctx.Request.Context(), filters)
 	if err != nil {
-		// ❌ Error interno del servidor
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Failed to fetch items",
 			"details": err.Error(),
@@ -59,11 +97,8 @@ func (c *ItemsController) GetItems(ctx *gin.Context) {
 		return
 	}
 
-	// ✅ Respuesta exitosa con los datos
-	ctx.JSON(http.StatusOK, gin.H{
-		"items": items,
-		"count": len(items),
-	})
+	// ✅ Respuesta exitosa con paginación incluida
+	ctx.JSON(http.StatusOK, resp)
 }
 
 // CreateItem maneja POST /items - Crea un nuevo item
