@@ -81,6 +81,8 @@ func (s *ItemsServiceImpl) Create(ctx context.Context, item domain.Item) (domain
 		return domain.Item{}, fmt.Errorf("error creating item in cache: %w", err)
 	}
 
+	// TODO: Publicar a RabbitMQ
+
 	return created, nil
 }
 
@@ -110,6 +112,7 @@ func (s *ItemsServiceImpl) Update(ctx context.Context, id string, item domain.It
 
 	// TODO: Actualizar en DB
 	// TODO: Guardar en cache
+	// TODO: Publicar a RabbitMQ
 
 	return domain.Item{}, errors.New("TODO: implementar Update")
 }
@@ -120,6 +123,7 @@ func (s *ItemsServiceImpl) Delete(ctx context.Context, id string) error {
 
 	// TODO: Borrar de cache
 	// TODO: Borrar de DB
+	// TODO: Publicar a RabbitMQ
 
 	return errors.New("TODO: implementar Delete")
 }
