@@ -5,11 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 )
+
 
 type SolrClient struct {
 	baseURL string
@@ -19,10 +21,10 @@ type SolrClient struct {
 
 type SolrDocument struct {
 	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Price     float64   `json:"price"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Name      []string  `json:"name"`
+	Price     []float64 `json:"price"`
+	CreatedAt []string  `json:"created_at"`
+	UpdatedAt []string  `json:"updated_at"`
 }
 
 type SolrResponse struct {
@@ -56,10 +58,10 @@ func NewSolrClient(host, port, core string) *SolrClient {
 func (s *SolrClient) Index(ctx context.Context, item domain.Item) error {
 	doc := SolrDocument{
 		ID:        item.ID,
-		Name:      item.Name,
-		Price:     item.Price,
-		CreatedAt: item.CreatedAt,
-		UpdatedAt: item.UpdatedAt,
+		Name:      []string{item.Name},
+		Price:     []float64{item.Price},
+		CreatedAt: []string{item.CreatedAt.Format(time.RFC3339)},
+		UpdatedAt: []string{item.UpdatedAt.Format(time.RFC3339)},
 	}
 
 	data, err := json.Marshal([]SolrDocument{doc})
@@ -132,17 +134,41 @@ func (s *SolrClient) Search(ctx context.Context, query string, page int, count i
 
 	var solrResp SolrResponse
 	if err := json.NewDecoder(resp.Body).Decode(&solrResp); err != nil {
+		// Log response body for debugging as json
+		slog.Info("Response body for debugging", "body", json.NewDecoder(resp.Body))
 		return domain.PaginatedResponse{}, fmt.Errorf("error decoding response: %w", err)
 	}
 
 	items := make([]domain.Item, len(solrResp.Response.Docs))
 	for i, doc := range solrResp.Response.Docs {
+		var name string
+		if len(doc.Name) > 0 {
+			name = doc.Name[0]
+		}
+
+		var price float64
+		if len(doc.Price) > 0 {
+			price = doc.Price[0]
+		}
+
+		var createdAt, updatedAt time.Time
+		if len(doc.CreatedAt) > 0 {
+			if t, err := time.Parse(time.RFC3339, doc.CreatedAt[0]); err == nil {
+				createdAt = t
+			}
+		}
+		if len(doc.UpdatedAt) > 0 {
+			if t, err := time.Parse(time.RFC3339, doc.UpdatedAt[0]); err == nil {
+				updatedAt = t
+			}
+		}
+
 		items[i] = domain.Item{
 			ID:        doc.ID,
-			Name:      doc.Name,
-			Price:     doc.Price,
-			CreatedAt: doc.CreatedAt,
-			UpdatedAt: doc.UpdatedAt,
+			Name:      name,
+			Price:     price,
+			CreatedAt: createdAt,
+			UpdatedAt: updatedAt,
 		}
 	}
 

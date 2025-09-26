@@ -1,0 +1,26 @@
+meta {
+  name: Link text_no_accents to name
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8983/solr/demo/schema
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "replace-field": {
+      "name": "name",
+      "type": "text_no_accents",
+      "stored": true,
+      "indexed": true
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+}

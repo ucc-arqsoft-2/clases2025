@@ -1,0 +1,38 @@
+meta {
+  name: Create no accents tokenizer
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8983/solr/demo/schema
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "add-field-type": {
+      "name": "text_no_accents",
+      "class": "solr.TextField",
+      "positionIncrementGap": "100",
+      "analyzer": {
+        "tokenizer": {
+          "class": "solr.StandardTokenizerFactory"
+        },
+        "filters": [
+          {
+            "class": "solr.LowerCaseFilterFactory"
+          },
+          {
+            "class": "solr.ASCIIFoldingFilterFactory"
+          }
+        ]
+      }
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -5,13 +5,13 @@ meta {
 }
 
 get {
-  url: http://localhost:8983/solr/demo/select?q=*:*&wt=json&indent=true
+  url: http://localhost:8983/solr/demo/select?q=name:tv&wt=json&indent=true
   body: none
   auth: inherit
 }
 
 params:query {
-  q: *:*
+  q: name:tv
   wt: json
   indent: true
 }

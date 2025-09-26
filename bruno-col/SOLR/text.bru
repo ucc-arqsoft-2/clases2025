@@ -1,0 +1,42 @@
+meta {
+  name: text
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8983/solr/demo/schema
+  body: formUrlEncoded
+  auth: inherit
+}
+
+headers {
+  "Content-type:application/json": undefined
+}
+
+body:form-urlencoded {
+  "{
+    \"add-field-type\": {
+      \"name\": \"text_no_accents\",
+      \"class\": \"solr.TextField\",
+      \"positionIncrementGap\": \"100\",
+      \"analyzer\": {
+        \"tokenizer\": {
+          \"class\": \"solr.StandardTokenizerFactory\"
+        },
+        \"filters\": [
+          {
+            \"class\": \"solr.LowerCaseFilterFactory\"
+          },
+          {
+            \"class\": \"solr.ASCIIFoldingFilterFactory\"
+          }
+        ]
+      }
+    }
+  }": 
+}
+
+settings {
+  encodeUrl: false
+}
