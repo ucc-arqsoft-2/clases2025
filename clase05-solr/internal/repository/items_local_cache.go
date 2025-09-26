@@ -21,8 +21,8 @@ func NewItemsLocalCacheRepository(ttl time.Duration) *ItemsLocalCacheRepository 
 	}
 }
 
-func (r ItemsLocalCacheRepository) List(ctx context.Context) ([]domain.Item, error) {
-	return nil, fmt.Errorf("list is not supported in memcached")
+func (r ItemsLocalCacheRepository) List(ctx context.Context) (domain.SearchResponse, error) {
+	return domain.SearchResponse{}, fmt.Errorf("list is not supported in memcached")
 }
 
 func (r ItemsLocalCacheRepository) Create(ctx context.Context, item domain.Item) (domain.Item, error) {

@@ -21,8 +21,16 @@ func NewSolrItemsRepository(host, port, core string) *SolrItemsRepository {
 }
 
 // List retorna todos los items indexados en Solr
-func (r *SolrItemsRepository) List(ctx context.Context) ([]domain.Item, error) {
-	return r.client.GetAll(ctx)
+func (r *SolrItemsRepository) List(ctx context.Context) (domain.SearchResponse, error) {
+	items, err := r.client.GetAll(ctx)
+	if err != nil {
+		return domain.SearchResponse{}, fmt.Errorf("error listing items from solr: %w", err)
+	}
+	return domain.SearchResponse{
+		Page:    1,
+		Count:   len(items),
+		Results: items,
+	}, nil
 }
 
 // Create indexa un nuevo item en Solr

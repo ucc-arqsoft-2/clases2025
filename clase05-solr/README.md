@@ -1,7 +1,6 @@
-# Clase 05 — Motores de búsqueda SOLR (Completar)
+# Clase 05 — Motores de búsqueda SOLR
 
-Estructura igual a la solución (respetando el screenshot). Este repo está
-preparado para que completes los ejercicios de cacheo con Memcached.
+Este proyecto está preparado para que completes la implementación de SolR.
 
 ## Requisitos
 - Docker Desktop (Windows / macOS)

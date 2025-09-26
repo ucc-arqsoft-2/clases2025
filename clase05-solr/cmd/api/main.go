@@ -40,7 +40,11 @@ func main() {
 	// itemsLocalCacheRepo := repository.NewItemsLocalCacheRepository(30 * time.Second)
 
 	// Capa de búsqueda: maneja operaciones de búsqueda con Solr
-	itemsSolrRepo := repository.NewSolrItemsRepository(cfg.Solr.Host, cfg.Solr.Port, cfg.Solr.Core)
+	itemsSolrRepo := repository.NewSolrItemsRepository(
+		cfg.Solr.Host,
+		cfg.Solr.Port,
+		cfg.Solr.Core,
+	)
 
 	// Inicializamos RabbitMQ para comunicar las novedades de escritura de items
 	itemsQueue := clients.NewRabbitMQClient(

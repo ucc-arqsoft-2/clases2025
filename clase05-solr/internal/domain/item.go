@@ -4,6 +4,12 @@ import (
 	"time"
 )
 
+type SearchResponse struct {
+	Page    int    `json:"page"`
+	Count   int    `json:"count"`
+	Results []Item `json:"results"`
+}
+
 type Item struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`

@@ -45,7 +45,7 @@ func NewMongoItemsRepository(ctx context.Context, uri, dbName, collectionName st
 }
 
 // List obtiene todos los items de DB
-func (r *MongoItemsRepository) List(ctx context.Context) ([]domain.Item, error) {
+func (r *MongoItemsRepository) List(ctx context.Context) (domain.SearchResponse, error) {
 	// ⏰ Timeout para evitar que la operación se cuelgue
 	// Esto es importante en producción para no bloquear indefinidamente
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -55,7 +55,7 @@ func (r *MongoItemsRepository) List(ctx context.Context) ([]domain.Item, error) 
 	// bson.M{} es un filtro vacío (equivale a {} en DB shell)
 	cur, err := r.col.Find(ctx, bson.M{})
 	if err != nil {
-		return nil, err
+		return domain.SearchResponse{}, err
 	}
 	defer cur.Close(ctx) // ⚠️ IMPORTANTE: Siempre cerrar el cursor para liberar recursos
 
@@ -63,7 +63,7 @@ func (r *MongoItemsRepository) List(ctx context.Context) ([]domain.Item, error) 
 	// Usamos el modelo DAO porque maneja ObjectID y tags BSON
 	var daoItems []dao.Item
 	if err := cur.All(ctx, &daoItems); err != nil {
-		return nil, err
+		return domain.SearchResponse{}, err
 	}
 
 	// 🔄 Convertir de DAO a Domain (para la capa de negocio)
@@ -73,7 +73,11 @@ func (r *MongoItemsRepository) List(ctx context.Context) ([]domain.Item, error) 
 		domainItems[i] = daoItem.ToDomain() // Función definida en dao/Item.go
 	}
 
-	return domainItems, nil
+	return domain.SearchResponse{
+		Page:    1,
+		Count:   len(domainItems),
+		Results: domainItems,
+	}, nil
 }
 
 // Create inserta un nuevo item en DB
