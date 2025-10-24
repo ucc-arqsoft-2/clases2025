@@ -73,7 +73,7 @@ func buildQuery(filters domain.SearchFilters) string {
 	var parts []string
 
 	// Si no hay filtros, devolvemos todo
-	if filters.ID == "" || filters.Name == "" && filters.MinPrice == nil && filters.MaxPrice == nil {
+	if filters.ID == "" && filters.Name == "" && filters.MinPrice == nil && filters.MaxPrice == nil {
 		return "*:*"
 	}
 
